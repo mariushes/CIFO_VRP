@@ -1,7 +1,7 @@
 from charles.charles import Population, Individual
 from charles.search import hill_climb, sim_annealing
 from charles.selection import fps, tournament
-from charles.mutation import swap_mutation
+from charles.mutation import swap_mutation, throas_mutation, inversion_mutation, swap_sequence_mutation, centre_inverse_mutation, partial_shuffle_mutation
 from charles.crossover import cycle_co
 from data.tsp_data import distance_matrix
 from random import choices
@@ -59,7 +59,7 @@ pop.evolve(
     gens=100, 
     select= tournament,
     crossover= cycle_co,
-    mutate=swap_mutation,
+    mutate=swap_sequence_mutation,
     co_p=0.8,
     mu_p=0.5,
     elitism=False
