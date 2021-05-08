@@ -2,7 +2,8 @@ from data.vrp_data import capacity, demands, distance_matrix, home
 from charles.charles import Population, Individual
 from charles.search import hill_climb, sim_annealing
 from charles.selection import fps, tournament
-from charles.mutation import swap_mutation
+from charles.mutation import swap_mutation, swap_sequence_mutation, cheapest_insertion_mutation
+import charles.mutation as mut
 from charles.crossover import cycle_co
 
 def evaluate(self):
@@ -71,6 +72,8 @@ if __name__ == '__main__':
     # Monkey patching
     Individual.evaluate = evaluate
     Individual.get_neighbours = get_neighbours
+    mut.distance_matrix = distance_matrix
+    mut.home = home
 
 
     pop = Population(
@@ -85,8 +88,8 @@ if __name__ == '__main__':
         gens=100, 
         select= tournament,
         crossover= cycle_co,
-        mutate=swap_mutation,
-        co_p=0.8,
-        mu_p=0.5,
-        elitism=False
+        mutate=swap_sequence_mutation,
+        co_p=0.7,
+        mu_p=0.1,
+        elitism=True
     )
