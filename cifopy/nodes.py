@@ -2,9 +2,10 @@ from data.vr1 import CAPACITY as cap, NODE_COORD_SECTION as coord, DEMAND_SECTIO
 import math
 import numpy as np
 
+#
 class node:
     def __init__(self, number, x, y, w):
-        self.number = number
+        self.number = number-1
         self.pos = np.array((x,y))
         self.w = w
     def distance(self, other):
@@ -16,12 +17,12 @@ for x in coord:
 
 
 n = len(node_list)
-ad_matrix = [[None for i in range(n)] for i in range(n)]
+dist_matrix = [[None for i in range(n)] for i in range(n)]
 for node1 in node_list:
     for node2 in node_list:
         i = node1.number
         j = node2.number
-        ad_matrix[i][j] = node1.distance(node2)
+        dist_matrix[i][j] = node1.distance(node2)
 
 weights = [None for i in range(n)]
 for x in node_list:
