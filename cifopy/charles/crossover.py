@@ -176,10 +176,63 @@ def uniform_order_co(p1, p2):
     offspring1, offspring2 = (fill_remaining(offspring1, p2), fill_remaining(offspring2, p1))
     return offspring1, offspring2
 
+def edge_recombination_co(p1, p2):
+    #build adjacency matrix
+    adj_matrix = {}
+    for i in range(len(p1)):
+        entry = p1[i]
+        adj_matrix[entry] = [p1[i-1]]
+        if i +1 == len(p1):
+            adj_matrix[entry].append(p1[0])
+        else:
+            adj_matrix[entry].append(p1[i+1])
+        
+    for i in range(len(p2)):
+        edges = [p2[i-1]]
+        if i +1 == len(p2):
+            edges.append(p2[0])
+        else:
+            edges.append(p2[i+1])
+        for j in list(adj_matrix.keys()):
+            if j == p2[i]:
+                if edges[0] not in adj_matrix.get(j):
+                    adj_matrix[j].append(edges[0])
+                if edges[1] not in adj_matrix.get(j):
+                    adj_matrix[j].append(edges[1])
+
+    def EAX(p1,p2):
+        offspring = []
+        #first node from a random parent
+        N = random.choice((p1[0], p2[0]))
+
+        while len(offspring) < len(p1) - 1:
+            offspring.append(N)
+            #remove N from all neighbor lists
+            table = {}
+            for j in list(adj_matrix.keys()):
+                if N in adj_matrix[j]:
+                    adj_matrix[j].remove(N)
+
+            #find next node
+            if adj_matrix[N]:
+                table = dict((k, adj_matrix[k]) for k in adj_matrix[N])
+                numb_neigh = {key: len(value) for key, value in table.items()}
+                min_value = min(numb_neigh.values())
+                result = [key for key, value in numb_neigh.items() if value == min_value]
+                N = random.choice(result)
+            else:
+                N = random.choice([key for key in adj_matrix.keys() if key not in offspring])
+
+        offspring.append(N)
+        return offspring
+
+    offspring1, offspring2 = (EAX(p1, p2), EAX(p1, p2))
+    return offspring1, offspring2
+
 
 
 if __name__ == '__main__':
     p1 = [1,2,6,4,3,5,7]
-    p2 = [7,5,2,3,6,4,1]
+    p2 = [7,2,5,3,4,6,1]
 
-    print(uniform_order_co(p1, p2))
+    print(edge_recombination_co(p1, p2))
