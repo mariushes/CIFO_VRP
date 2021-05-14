@@ -96,6 +96,24 @@ class Population:
                 print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')
             elif self.optim == "min":
                 print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
+    
+    def shuffle(self, seed = 42):#should everything be reproducible and set seed everywhere? Maybe ask Dave
+        n = len(self)
+        new_pop = []
+        new_pop.append(deepcopy(max(self.individuals, key=attrgetter("fitness"))))
+        keep = sample(range(n), k=n//2)
+        #for how it's implemented the best could appear twice. Don't think it's a problem but we can avoid it
+        for i in keep:
+            new_pop.append(deepcopy(self.individuals[i])) #to test, not sure
+        while len(new_pop)<n:
+            new_pop.append(Individual(
+                    size=kwargs["sol_size"], #I did not understand this also before, discuss
+                    replacement=kwargs["replacement"],
+                    valid_set=kwargs["valid_set"]))
+        if len(new_pop) != n:
+            raise Exception("Marco you're an idiot, wrong indexes")
+        
+        self.individuals = new_pop
 
     def __len__(self):
         return len(self.individuals)

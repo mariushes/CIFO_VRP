@@ -1,11 +1,13 @@
 from random import uniform, sample
 from operator import attrgetter
-
-def fps(population):
+import numpy as np
+def fps(population, prem = False):
     """Fitness proportionate selection implementation.
 
     Args:
         population (Population): The population we want to select from.
+        prem: By default False, in case the variance of the fitness distribution in the population is less than 
+        5% of the initial variance 
 
     Returns:
         Individual: selected individual.
@@ -13,7 +15,16 @@ def fps(population):
 
     if population.optim == "max":
         # Sum total fitnesses
-        total_fitness = sum([i.fitness for i in population])
+        fitness = [i.fitness for i in population]
+        if prem:
+            #Do we want to save this variance? Maybe we can plot how it changes through generation
+            var = np.var(fitness)
+            if var/population.initial_var<0.05:
+                print("Premature convergence! Reshuffling the deck")
+                population.reshuffle()
+                #Re-evaluate fitness since population changed
+                fitness = [i.fitness for i in population]
+        total_fitness = sum(fitness)
         # Get a 'position' on the wheel
         spin = uniform(0, total_fitness)
         position = 0
