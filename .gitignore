@@ -130,3 +130,6 @@ dmypy.json
 
 # VS Code
 .vscode/
+.vscode/settings.json
+cifopy/.vscode/
+cifopy/.vscode/settings.json
