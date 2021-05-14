@@ -10,5 +10,7 @@ from vrp import evaluate, get_neighbours
 Individual.evaluate = evaluate
 Individual.get_neighbours = get_neighbours
 
-test_ind = Individual(representation=[1,2,3,4,5,6])
+test_ind = Individual(representation=[1,2,3,4,5,6,7,8])
+print(test_ind.fitness)
+test_ind[0] = 5
 print(test_ind.fitness)
