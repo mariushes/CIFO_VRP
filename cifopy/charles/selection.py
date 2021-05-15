@@ -1,6 +1,8 @@
 from random import uniform, sample
 from operator import attrgetter
 
+mo_functions = None
+
 def fps(population):
     """Fitness proportionate selection implementation.
 

@@ -1,6 +1,6 @@
 from random import randint, sample, random
 
-distance_matrix = None
+dm = None
 home = None
 
 
@@ -124,7 +124,7 @@ def cheapest_insertion_mutation(individual):
     TODO: Finish
     """
     i = individual
-    if distance_matrix == None:
+    if dm == None:
         raise Exception("You need to monkey patch the distance matrix.")
     
     if home == None:
@@ -138,8 +138,8 @@ def cheapest_insertion_mutation(individual):
     cheapest_detour = 9999999
     cheapest_detour_pos = 0
     for j in range(len(i)):
-        normal_length = distance_matrix[i[j-1]][i[j]]
-        insert_length = distance_matrix[i[j-1]][insert] + distance_matrix[insert][i[j]]
+        normal_length = dm[i[j-1]][i[j]]
+        insert_length = dm[i[j-1]][insert] + dm[insert][i[j]]
         detour = insert_length - normal_length
         if detour < cheapest_detour:
             cheapest_detour = detour
