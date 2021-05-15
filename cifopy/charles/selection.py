@@ -40,3 +40,20 @@ def tournament(population, size=20):
         return min(tournament, key=attrgetter("fitness"))
     else:
         raise Exception("No optimiziation specified (min or max).")
+"""
+def multi_objective_dominant(population):
+
+    if mo_functions == None:
+        raise Exception("You need to monkey patch the multi objective functions.")
+
+    # Copy all indices into a set s
+    population_indices = set(range)
+    # repeat
+    # find all non-dominant indices
+    # assign all non-dominated indices a flag = i
+    # remove those indices from S
+
+    # selection probability: inversly to flag 
+
+    return individual
+"""
