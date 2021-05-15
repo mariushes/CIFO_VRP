@@ -78,12 +78,12 @@ if __name__ == '__main__':
         sol_size=len(distance_matrix[0]),
         valid_set=[i for i in range(len(distance_matrix[0]))],
         replacement=False,
-        optim="min",
+        optim="max",
     )
 
     pop.evolve(
         gens=100, 
-        select= tournament,
+        select= fps,
         crossover= cycle_co,
         mutate=swap_mutation,
         co_p=0.8,

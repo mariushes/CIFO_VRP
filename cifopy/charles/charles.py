@@ -1,7 +1,7 @@
 from random import shuffle, choice, sample, random
 from operator import  attrgetter
 from copy import deepcopy
-
+import numpy as np
 
 class Individual:
     def __init__(
@@ -55,6 +55,7 @@ class Population:
                     valid_set=kwargs["valid_set"],
                 )
             )
+        self.initial_var = np.var([i for i in self])
     def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism):
         for gen in range(gens):
             new_pop = []
@@ -97,7 +98,7 @@ class Population:
             elif self.optim == "min":
                 print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
     
-    def shuffle(self, seed = 42):#should everything be reproducible and set seed everywhere? Maybe ask Dave
+    def reshuffle(self, seed = 42):#should everything be reproducible and set seed everywhere? Maybe ask Dave
         n = len(self)
         new_pop = []
         new_pop.append(deepcopy(max(self.individuals, key=attrgetter("fitness"))))

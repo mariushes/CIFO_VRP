@@ -1,7 +1,7 @@
 from random import uniform, sample
 from operator import attrgetter
 import numpy as np
-def fps(population, prem = False):
+def fps(population, prem = True):
     """Fitness proportionate selection implementation.
 
     Args:
