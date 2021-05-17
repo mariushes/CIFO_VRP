@@ -1,7 +1,8 @@
 from charles.charles import Population, Individual
 from charles.search import hill_climb, sim_annealing
 from charles.selection import fps, tournament
-from charles.mutation import swap_mutation
+from charles.mutation import swap_mutation, throas_mutation, inversion_mutation, swap_sequence_mutation, centre_inverse_mutation, partial_shuffle_mutation
+import charles.mutation as mut
 from charles.crossover import cycle_co
 from data.tsp_data import distance_matrix
 from random import choices
@@ -45,6 +46,8 @@ def get_neighbours(self):
 # Monkey patching
 Individual.evaluate = evaluate
 Individual.get_neighbours = get_neighbours
+mut.distance_matrix = distance_matrix
+mut.home = 0
 
 
 pop = Population(
@@ -59,8 +62,8 @@ pop.evolve(
     gens=100, 
     select= tournament,
     crossover= cycle_co,
-    mutate=swap_mutation,
+    mutate=swap_sequence_mutation,
     co_p=0.8,
-    mu_p=0.5,
-    elitism=False
+    mu_p=0.2,
+    elitism=True
 )

@@ -1,5 +1,6 @@
 from random import shuffle, choice, sample, random
 from operator import  attrgetter
+from copy import deepcopy
 
 
 class Individual:
@@ -36,9 +37,24 @@ class Individual:
 
     def __setitem__(self, position, value):
         self.representation[position] = value
+        self.fitness = self.evaluate()
 
     def __repr__(self):
         return f"Individual(size={len(self.representation)}); Fitness: {self.fitness}"
+
+    def append(self, appendix):
+        self.representation.append(appendix)
+        self.fitness = self.evaluate()
+
+    def insert(self, index, insert):
+        self.representation.insert(index, insert)
+
+    def pop(self, index=-1):
+        temp = self.representation.pop()
+        self.fitness = self.evaluate()
+        return temp
+
+    
 
 
 class Population:

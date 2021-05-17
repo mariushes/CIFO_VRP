@@ -20,7 +20,7 @@ home = 0
 
 capacity = 40
 
-demands = range (6, 20)
+demands = range(6, 20)
 
 distance_matrix = [
     [0, 2451, 713, 1018, 1631, 1374, 2408, 213, 2571, 875, 1420, 2145, 1972],
