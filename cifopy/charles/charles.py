@@ -19,8 +19,15 @@ class Individual:
         else:
             self.representation = representation
         self.fitness = self.evaluate()
+        try:
+            self.fitness2 = self.evaluate2()
+        except:
+            pass
 
     def evaluate(self):
+        raise Exception("You need to monkey patch the fitness path.")
+
+    def evaluate2(self):
         raise Exception("You need to monkey patch the fitness path.")
 
     def get_neighbours(self, func, **kwargs):
