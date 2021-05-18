@@ -1,13 +1,16 @@
 from random import uniform, sample
 from operator import attrgetter
 import numpy as np
+
+mo_functions = None
+
 def fps(population, prem = True):
     """Fitness proportionate selection implementation.
 
     Args:
         population (Population): The population we want to select from.
-        prem: By default False, in case the variance of the fitness distribution in the population is less than 
-        5% of the initial variance 
+        prem: By default False, in case the variance of the fitness distribution in the population is less than
+        5% of the initial variance
 
     Returns:
         Individual: selected individual.

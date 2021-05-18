@@ -44,3 +44,5 @@ print(f"Total CO2: {sum(sum(np.array(co2_matrix)))}")
 weights = [None for i in range(n)]
 for x in node_list:
     weights[x.number] = x.w
+
+capacity = cap

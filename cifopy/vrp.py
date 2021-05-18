@@ -1,11 +1,20 @@
-from data.vrp_data import capacity, demands, distance_matrix, home
+import data.vrp_data
+import nodes
 from charles.charles import Population, Individual
 from charles.search import hill_climb, sim_annealing
 from charles.selection import fps, tournament
 from charles.mutation import swap_mutation
+import charles.mutation as mut
+import charles.selection as sel
 from charles.crossover import cycle_co
 
-def evaluate(self):
+dm = None
+demands = None
+home = None
+capacity = None
+cm = None
+
+def evaluate_distance(self):
     """A simple objective function to calculate distances
     for the VRP problem.
 
@@ -23,10 +32,27 @@ def evaluate(self):
             # to first, to terminate the trip
             pos_from = route[i - 1]
             pos_to = route[i]
-            distance = distance_matrix[pos_from][pos_to]
+            distance = dm[pos_from][pos_to]
             fitness += distance
 
     return int(fitness)
+
+def evaluate_co2(self):
+    fitness = 0
+    routes = split_to_routes(self)
+
+    for route in routes:
+        route = [home] + route + [home]
+        for i in range(1,len(route)):
+            # Calculates full distance, including from last city
+            # to first, to terminate the trip
+            pos_from = route[i - 1]
+            pos_to = route[i]
+            distance = cm[pos_from][pos_to]
+            fitness += distance
+
+    return int(fitness)
+    
 
 
 def split_to_routes(self):
@@ -69,14 +95,24 @@ def get_neighbours(self):
 
 if __name__ == '__main__':
     # Monkey patching
-    Individual.evaluate = evaluate
+    Individual.evaluate = evaluate_distance
     Individual.get_neighbours = get_neighbours
+
+    dm = nodes.dist_matrix
+    cm = nodes.co2_matrix
+    demands = nodes.weights
+    home = 0
+    capacity = nodes.capacity
+    mut.dm = nodes.dist_matrix
+    mut.home = 0
+    sel.mo_functions = [evaluate_distance, evaluate_co2]
+
 
 
     pop = Population(
         size=100,
-        sol_size=len(distance_matrix[0]),
-        valid_set=[i for i in range(len(distance_matrix[0]))],
+        sol_size=len(dm[0]),
+        valid_set=[i for i in range(len(dm[0]))],
         replacement=False,
         optim="max",
     )
