@@ -19,6 +19,7 @@ class Individual:
         else:
             self.representation = representation
         self.fitness = self.evaluate()
+        
         try:
             self.fitness2 = self.evaluate2()
         except:
@@ -69,6 +70,7 @@ class Population:
         self.individuals = []
         self.size = size
         self.optim = optim
+        self.pareto_flags = None
         for _ in range(size):
             self.individuals.append(
                 Individual(
@@ -113,6 +115,7 @@ class Population:
                 new_pop.append(elite)
  
             self.individuals = new_pop
+            self.pareto_flags = None
  
             if self.optim == "max":
                 print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')

@@ -42,40 +42,49 @@ def tournament(population, size=20):
 
 def multi_objective_dominant(population):
 
-    # Copy all indices into a set s
-    population_indices = [*range(len(population))]
-    costs = [[indiv.fitness, indiv.fitness2] for indiv in population]
-    costs = np.array(costs)
-    flags = [0 for i in population_indices]
-    flag_count = 0
+    # check if pareto flags were not already saved
+    if population.pareto_flags == None:
+        # Copy all indices into a set s
+        population_indices = [*range(len(population))]
+        costs = [[indiv.fitness, indiv.fitness2] for indiv in population]
+        costs = np.array(costs)
+        flags = [0 for i in population_indices]
+        flag_count = 0
 
-    # repeat
-    while population_indices:
-        flag_count += 1
-        # find all non-dominant indices
-        pareto_list = is_pareto_efficient(costs, population.optim)
-        for i in range(len(pareto_list)):
-                # assign all non-dominated indices a flag
-            if pareto_list[i]:
-                real_index = population_indices[i]
-                flags[real_index] = flag_count
+        # repeat
+        while population_indices:
+            flag_count += 1
+            # find all non-dominant indices
+            pareto_list = is_pareto_efficient(costs, population.optim)
+            for i in range(len(pareto_list)):
+                    # assign all non-dominated indices a flag
+                if pareto_list[i]:
+                    real_index = population_indices[i]
+                    flags[real_index] = flag_count
+            
+            removed_elements = 0
+            for i in range(len(pareto_list)):
+                    # remove those indices from S
+                if pareto_list[i]:
+                    population_indices.pop(i-removed_elements)
+                    costs = np.delete(costs, i-removed_elements, 0)
+                    removed_elements += 1
+
         
-        removed_elements = 0
-        for i in range(len(pareto_list)):
-                # remove those indices from S
-            if pareto_list[i]:
-                population_indices.pop(i-removed_elements)
-                costs = np.delete(costs, i-removed_elements, 0)
-                removed_elements += 1
+        # selection probability: inversly to flag
 
-    
-    # selection probability: inversly to flag
+        # inverse flag
+        flag_range_reverse = [*range(flag_count,0,-1)]
 
-    # inverse flag
-    flag_range_reverse = [*range(flag_count,0,-1)]
+        # can we save the flags in the population? Probably need a flag to indicate new generation
+        
+        for i in range(len(flags)):
+            flags[i] = flag_range_reverse[flags[i]-1]
+        population.pareto_flags = flags
 
-    for i in range(len(flags)):
-        flags[i] = flag_range_reverse[flags[i]-1]
+    else:
+        # assign pareto flags of population to flags variable if not there yet
+        flags = population.pareto_flags
     
     sum_flags = sum(flags)
 
