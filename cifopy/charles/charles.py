@@ -1,3 +1,4 @@
+from charles.selection import fps
 from random import shuffle, choice, sample, random
 from operator import  attrgetter
 from copy import deepcopy
@@ -70,8 +71,11 @@ class Population:
                     valid_set=kwargs["valid_set"],
                 )
             )
-        self.initial_var = np.var([i for i in self])
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism):
+        self.initial_var = np.var([i.fitness for i in self])
+        self.sol_size=kwargs["sol_size"],
+        self.replacement=kwargs["replacement"],
+        self.valid_set=kwargs["valid_set"]
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, prem = False):
         for gen in range(gens):
             new_pop = []
  
@@ -80,10 +84,21 @@ class Population:
                     elite = deepcopy(max(self.individuals, key=attrgetter("fitness")))
                 elif self.optim == "min":
                     elite = deepcopy(min(self.individuals, key=attrgetter("fitness")))
- 
+
+            if prem and select == fps:
+            #Do we want to save this variance? Maybe we can plot how it changes through generation
+                fitness = [i.fitness for i in self]
+                var = np.var(fitness)
+                if var/self.initial_var<0.05:
+                    print("Premature convergence! Reshuffling the deck")
+                    self.reshuffle()
+                    #Re-evaluate fitness since population changed
+                    fitness = [i.fitness for i in self]
+                    print("New variance ratio:", var(fitness)/self.initial_var)
+
             while len(new_pop) < self.size:
                 parent1, parent2 = select(self), select(self)
-                # Crossover
+                #Crossover
                 if random() < co_p:
                     offspring1, offspring2 = crossover(parent1, parent2)
                 else:
@@ -109,11 +124,14 @@ class Population:
             self.individuals = new_pop
  
             if self.optim == "max":
-                print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')
+                if gen%50==0:
+                    print(f'Best Individual: {max(self, key=attrgetter("fitness"))} Gen: {gen}')
+ 
             elif self.optim == "min":
-                print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
+                if gen%50==0:
+                    print(f'Best Individual: {min(self, key=attrgetter("fitness"))} Gen: {gen}')
     
-    def reshuffle(self, seed = 42):#should everything be reproducible and set seed everywhere? Maybe ask Dave
+    def reshuffle(self):
         n = len(self)
         new_pop = []
         new_pop.append(deepcopy(max(self.individuals, key=attrgetter("fitness"))))
@@ -123,9 +141,9 @@ class Population:
             new_pop.append(deepcopy(self.individuals[i])) #to test, not sure
         while len(new_pop)<n:
             new_pop.append(Individual(
-                    size=kwargs["sol_size"], #I did not understand this also before, discuss
-                    replacement=kwargs["replacement"],
-                    valid_set=kwargs["valid_set"]))
+                    size=self.sol_size,
+                    replacement=self.replacement,
+                    valid_set=self.valid_set))
         if len(new_pop) != n:
             raise Exception("Marco you're an idiot, wrong indexes")
         

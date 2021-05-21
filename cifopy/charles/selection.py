@@ -19,6 +19,7 @@ def fps(population, prem = True):
     if population.optim == "max":
         # Sum total fitnesses
         fitness = [i.fitness for i in population]
+        """
         if prem:
             #Do we want to save this variance? Maybe we can plot how it changes through generation
             var = np.var(fitness)
@@ -26,7 +27,7 @@ def fps(population, prem = True):
                 print("Premature convergence! Reshuffling the deck")
                 population.reshuffle()
                 #Re-evaluate fitness since population changed
-                fitness = [i.fitness for i in population]
+                fitness = [i.fitness for i in population]"""
         total_fitness = sum(fitness)
         # Get a 'position' on the wheel
         spin = uniform(0, total_fitness)
