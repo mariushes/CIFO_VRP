@@ -4,7 +4,7 @@ import numpy as np
 
 mo_functions = None
 
-def fps(population, prem = True):
+def fps(population):
     """Fitness proportionate selection implementation.
 
     Args:

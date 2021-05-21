@@ -124,6 +124,6 @@ if __name__ == '__main__':
         mutate=swap_mutation,
         co_p=0.8,
         mu_p=0.5,
-        elitism=False,
+        elitism = False,
         prem = True
     )

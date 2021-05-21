@@ -68,13 +68,13 @@ class Population:
                 Individual(
                     size=kwargs["sol_size"],
                     replacement=kwargs["replacement"],
-                    valid_set=kwargs["valid_set"],
+                    valid_set=kwargs["valid_set"]
                 )
             )
         self.initial_var = np.var([i.fitness for i in self])
-        self.sol_size=kwargs["sol_size"],
-        self.replacement=kwargs["replacement"],
-        self.valid_set=kwargs["valid_set"]
+        self.sol_size = kwargs["sol_size"]
+        self.replacement = kwargs["replacement"]
+        self.valid_set = kwargs["valid_set"]
     def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, prem = False):
         for gen in range(gens):
             new_pop = []
@@ -94,7 +94,7 @@ class Population:
                     self.reshuffle()
                     #Re-evaluate fitness since population changed
                     fitness = [i.fitness for i in self]
-                    print("New variance ratio:", var(fitness)/self.initial_var)
+                    print(f"New variance ratio:{np.var(fitness)/self.initial_var}")
 
             while len(new_pop) < self.size:
                 parent1, parent2 = select(self), select(self)
@@ -134,9 +134,15 @@ class Population:
     def reshuffle(self):
         n = len(self)
         new_pop = []
-        new_pop.append(deepcopy(max(self.individuals, key=attrgetter("fitness"))))
+        if self.optim == "max":
+            new_pop.append(deepcopy(max(self.individuals, key=attrgetter("fitness"))))
+        elif self.optim == "min":
+            new_pop.append(deepcopy(min(self.individuals, key=attrgetter("fitness"))))
+        
+        
         keep = sample(range(n), k=n//2)
         #for how it's implemented the best could appear twice. Don't think it's a problem but we can avoid it
+        #half of the times you keep the best twice, could also be useful. write in report
         for i in keep:
             new_pop.append(deepcopy(self.individuals[i])) #to test, not sure
         while len(new_pop)<n:
@@ -144,9 +150,7 @@ class Population:
                     size=self.sol_size,
                     replacement=self.replacement,
                     valid_set=self.valid_set))
-        if len(new_pop) != n:
-            raise Exception("Marco you're an idiot, wrong indexes")
-        
+
         self.individuals = new_pop
 
     def __len__(self):
