@@ -118,6 +118,7 @@ if __name__ == '__main__':
     )
 
     pop.evolve(
+
         gens=1000, 
         select= fps,
         crossover= cycle_co,
