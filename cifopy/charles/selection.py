@@ -1,5 +1,6 @@
 from random import uniform, sample, choice
 from operator import attrgetter
+import numpy as np
 
 mo_functions = None
 
@@ -8,6 +9,8 @@ def fps(population):
 
     Args:
         population (Population): The population we want to select from.
+        prem: By default False, in case the variance of the fitness distribution in the population is less than
+        5% of the initial variance
 
     Returns:
         Individual: selected individual.
@@ -15,7 +18,8 @@ def fps(population):
 
     if population.optim == "max":
         # Sum total fitnesses
-        total_fitness = sum([i.fitness for i in population])
+        fitness = [i.fitness for i in population]
+        total_fitness = sum(fitness)
         # Get a 'position' on the wheel
         spin = uniform(0, total_fitness)
         position = 0
