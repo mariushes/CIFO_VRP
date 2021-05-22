@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     pop.evolve(
         gens=100, 
-        select= tournament,
+        select= fps,
         crossover= cycle_co,
         mutate=swap_mutation,
         co_p=0.8,
