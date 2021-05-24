@@ -1,5 +1,8 @@
+
 import random
 import numpy as np
+from random import randint, uniform, sample
+
 
 dm = None
 home = None
@@ -33,7 +36,7 @@ def single_point_co(p1, p2):
     offspring2 = p2[:co_point] + p1[co_point:]
 
     return offspring1, offspring2
-    
+
 def cycle_co(p1, p2):
     # Offspring placeholders - None values make it easy to debug for errors
     offspring1 = [None] * len(p1)
@@ -108,7 +111,7 @@ def pmx_co(p1, p2):
     )
 
     return o1, o2
-    
+
 def ordered_co(p1, p2):
     """
     Implementation of Ordered Crossover. Ordered Crossover copies a part of the offspring chromosome from the first
@@ -187,7 +190,7 @@ def edge_recombination_co(p1, p2):
             adj_matrix[entry].append(p1[0])
         else:
             adj_matrix[entry].append(p1[i+1])
-        
+
     for i in range(len(p2)):
         edges = [p2[i-1]]
         if i +1 == len(p2):

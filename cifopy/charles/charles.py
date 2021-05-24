@@ -3,6 +3,8 @@ from random import shuffle, choice, sample, random
 from operator import  attrgetter
 from copy import deepcopy
 import numpy as np
+import csv
+import time
 
 class Individual:
     def __init__(
@@ -55,7 +57,7 @@ class Individual:
         self.fitness = self.evaluate()
         return temp
 
-    
+
 
 
 class Population:
@@ -63,6 +65,8 @@ class Population:
         self.individuals = []
         self.size = size
         self.optim = optim
+        self.gen = 1
+        self.timestamp = int(time.time())
         for _ in range(size):
             self.individuals.append(
                 Individual(
@@ -78,7 +82,7 @@ class Population:
     def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, prem = False):
         for gen in range(gens):
             new_pop = []
- 
+
             if elitism == True:
                 if self.optim == "max":
                     elite = deepcopy(max(self.individuals, key=attrgetter("fitness")))
@@ -101,18 +105,19 @@ class Population:
                 #Crossover
                 if random() < co_p:
                     offspring1, offspring2 = crossover(parent1, parent2)
+                    offspring1, offspring2 = crossover(parent1.representation, parent2.representation)
                 else:
-                    offspring1, offspring2 = parent1, parent2
+                    offspring1, offspring2 = parent1.representation, parent2.representation
                 # Mutation
                 if random() < mu_p:
                     offspring1 = mutate(offspring1)
                 if random() < mu_p:
                     offspring2 = mutate(offspring2)
- 
+
                 new_pop.append(Individual(representation=offspring1))
                 if len(new_pop) < self.size:
                     new_pop.append(Individual(representation=offspring2))
- 
+
             if elitism == True:
                 if self.optim == "max":
                     least = min(new_pop, key=attrgetter("fitness"))
@@ -120,17 +125,19 @@ class Population:
                     least = max(new_pop, key=attrgetter("fitness"))
                 new_pop.pop(new_pop.index(least))
                 new_pop.append(elite)
- 
+
+            self.log()
             self.individuals = new_pop
- 
+            self.gen += 1
+
             if self.optim == "max":
                 if gen%50==0:
                     print(f'Best Individual: {max(self, key=attrgetter("fitness"))} Gen: {gen}')
- 
+
             elif self.optim == "min":
                 if gen%50==0:
                     print(f'Best Individual: {min(self, key=attrgetter("fitness"))} Gen: {gen}')
-    
+
     def reshuffle(self):
         n = len(self)
         new_pop = []
@@ -138,8 +145,8 @@ class Population:
             new_pop.append(deepcopy(max(self.individuals, key=attrgetter("fitness"))))
         elif self.optim == "min":
             new_pop.append(deepcopy(min(self.individuals, key=attrgetter("fitness"))))
-        
-        
+
+
         keep = sample(range(n), k=n//2)
         #for how it's implemented the best could appear twice. Don't think it's a problem but we can avoid it
         #half of the times you keep the best twice, could also be useful. write in report
@@ -152,6 +159,13 @@ class Population:
                     valid_set=self.valid_set))
 
         self.individuals = new_pop
+
+    def log(self):
+        with open(f'run_{self.timestamp}.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            for i in self:
+                writer.writerow([self.gen, i.representation, i.fitness])
+
 
     def __len__(self):
         return len(self.individuals)
