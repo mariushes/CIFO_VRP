@@ -38,3 +38,21 @@ def tournament(population, size=20):
         return min(tournament, key=attrgetter("fitness"))
     else:
         raise Exception("No optimiziation specified (min or max).")
+
+def rank(population):
+    # Rank individuals based on optim approach
+    if population.optim == 'max':
+        population.individuals.sort(key=attrgetter('fitness'))
+    elif population.optim == 'min':
+        population.individuals.sort(key=attrgetter('fitness'), reverse=True)
+
+    # Sum all ranks
+    total = sum(range(population.size+1))
+    # Get random position
+    spin = uniform(0, total)
+    position = 0
+    # Iterate until spin is found
+    for count, individual in enumerate(population):
+        position += count + 1
+        if position > spin:
+            return individual
