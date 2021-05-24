@@ -111,9 +111,9 @@ def is_pareto_efficient(costs, optim,return_mask = True):
     next_point_index = 0  # Next index in the is_efficient array to search for
     while next_point_index<len(costs):
         if optim =="max":
-            nondominated_point_mask = np.any(costs<costs[next_point_index], axis=1)
-        elif optim =="min":
             nondominated_point_mask = np.any(costs>costs[next_point_index], axis=1)
+        elif optim =="min":
+            nondominated_point_mask = np.any(costs<costs[next_point_index], axis=1)
         nondominated_point_mask[next_point_index] = True
         is_efficient = is_efficient[nondominated_point_mask]  # Remove dominated points
         costs = costs[nondominated_point_mask]

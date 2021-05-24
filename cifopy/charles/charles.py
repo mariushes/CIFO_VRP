@@ -1,6 +1,8 @@
 from random import shuffle, choice, sample, random
-from operator import  attrgetter
+from operator import  attrgetter, index
 from copy import deepcopy
+from charles.selection import multi_objective_dominant, is_pareto_efficient
+import numpy as np
 
 
 class Individual:
@@ -79,7 +81,7 @@ class Population:
                     valid_set=kwargs["valid_set"],
                 )
             )
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism):
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, print_all_pareto=False):
         for gen in range(gens):
             new_pop = []
  
@@ -116,11 +118,32 @@ class Population:
  
             self.individuals = new_pop
             self.pareto_flags = None
- 
-            if self.optim == "max":
-                print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')
-            elif self.optim == "min":
-                print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
+
+            if select == multi_objective_dominant:
+                # if selection is by multi_objective_dominant we return the first element that is found to be pareto efficient 
+                # by search for an element with the maximum flag.
+                costs = [[indiv.fitness, indiv.fitness2] for indiv in self]
+                costs = np.array(costs)
+                pareto_list = is_pareto_efficient(costs, self.optim).tolist()
+                
+                pareto_index = pareto_list.index(True)
+                print(f'Best Individual: Fitness 1: {self[pareto_index].fitness}, Fitness 2: {self[pareto_index].fitness2}')
+                if print_all_pareto:
+                    print("")
+                    for i, pareto in enumerate(pareto_list):
+                        if pareto:
+                            print(f'Best Individual: Fitness 1: {self[i].fitness}, Fitness 2: {self[i].fitness2}')
+                else:
+                    pareto_index = pareto_list.index(True)
+                    print(f'Best Individual: Fitness 1: {self[pareto_index].fitness}, Fitness 2: {self[pareto_index].fitness2}')
+                
+            else:
+                if self.optim == "max":
+                    
+                    print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')
+                elif self.optim == "min":
+                    print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
+            
 
     def __len__(self):
         return len(self.individuals)
