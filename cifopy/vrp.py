@@ -111,14 +111,15 @@ if __name__ == '__main__':
 
 
     pop = Population(
-        size=100,
+        size=10,
         sol_size=len(dm[0]),
         valid_set=[i for i in range(len(dm[0]))],
         replacement=False,
-        optim="min",
+        optim="max",
     )
 
     pop.evolve(
+
         gens=100, 
         select= multi_objective_dominant,
         crossover= cycle_co,
@@ -127,4 +128,6 @@ if __name__ == '__main__':
         mu_p=0.5,
         elitism=False,
         print_all_pareto=True
+        prem = False
+
     )

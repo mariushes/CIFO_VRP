@@ -1,12 +1,15 @@
-from random import uniform, sample
+from random import uniform, sample, choice
 from operator import attrgetter
 import numpy as np
+
 
 def fps(population):
     """Fitness proportionate selection implementation.
 
     Args:
         population (Population): The population we want to select from.
+        prem: By default False, in case the variance of the fitness distribution in the population is less than
+        5% of the initial variance
 
     Returns:
         Individual: selected individual.
@@ -14,7 +17,8 @@ def fps(population):
 
     if population.optim == "max":
         # Sum total fitnesses
-        total_fitness = sum([i.fitness for i in population])
+        fitness = [i.fitness for i in population]
+        total_fitness = sum(fitness)
         # Get a 'position' on the wheel
         spin = uniform(0, total_fitness)
         position = 0
@@ -24,7 +28,31 @@ def fps(population):
             if position > spin:
                 return individual
     elif population.optim == "min":
-        raise NotImplementedError
+        pop_fitness = [i.fitness for i in population]
+        M, m = max(pop_fitness), min(pop_fitness)
+        #min_prob is the probability of the least likely individual in a max instance with same fitness
+        min_prob = m/sum(pop_fitness)
+        n = len(population)
+        #covering the (extremely unlikely) case where all indiv have the same fitness, that otherwise would bring
+        # a division by zero
+        if n*min_prob == 1:
+            return choice(population.individuals)
+        rev_fitness = [M-x for x in pop_fitness]
+        to_add = min_prob*sum(rev_fitness)/(1-n*min_prob)
+        #the new vector from which compute probabilities
+        rev_fitness[:] = [x+to_add for x in rev_fitness]
+         # Sum total fitnesses
+        total_fitness = sum(rev_fitness)
+        # Get a 'position' on the wheel
+        spin = uniform(0, total_fitness)
+        position = 0
+        i = 0
+        # Find individual in the position of the spin
+        for individual in population:
+            position += rev_fitness[i]
+            if position > spin:
+                return individual
+            i += 1
 
     else:
         raise Exception("No optimiziation specified (min or max).")
@@ -39,6 +67,7 @@ def tournament(population, size=20):
         return min(tournament, key=attrgetter("fitness"))
     else:
         raise Exception("No optimiziation specified (min or max).")
+
 
 def multi_objective_dominant(population):
 
@@ -124,3 +153,22 @@ def is_pareto_efficient(costs, optim,return_mask = True):
         return is_efficient_mask
     else:
         return is_efficient
+
+def rank(population):
+    # Rank individuals based on optim approach
+    if population.optim == 'max':
+        population.individuals.sort(key=attrgetter('fitness'))
+    elif population.optim == 'min':
+        population.individuals.sort(key=attrgetter('fitness'), reverse=True)
+
+    # Sum all ranks
+    total = sum(range(population.size+1))
+    # Get random position
+    spin = uniform(0, total)
+    position = 0
+    # Iterate until spin is found
+    for count, individual in enumerate(population):
+        position += count + 1
+        if position > spin:
+            return individual
+
