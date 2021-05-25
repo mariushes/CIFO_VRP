@@ -8,6 +8,7 @@ import charles.mutation as mut
 import charles.selection as sel
 from charles.crossover import cycle_co
 
+
 dm = None
 demands = None
 home = None
@@ -115,7 +116,7 @@ if __name__ == '__main__':
         sol_size=len(dm[0]),
         valid_set=[i for i in range(len(dm[0]))],
         replacement=False,
-        optim="max",
+        optim="min",
     )
 
     pop.evolve(
@@ -127,7 +128,7 @@ if __name__ == '__main__':
         co_p=0.8,
         mu_p=0.5,
         elitism=False,
-        print_all_pareto=True
+        print_all_pareto=True,
         prem = False
 
     )

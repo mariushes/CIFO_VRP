@@ -2,6 +2,7 @@ from charles.selection import fps
 from random import shuffle, choice, sample, random
 from operator import  attrgetter, index
 from copy import deepcopy
+import numpy as np
 
 from charles.selection import multi_objective_dominant, is_pareto_efficient
 
