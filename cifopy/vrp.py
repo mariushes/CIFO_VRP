@@ -129,6 +129,7 @@ if __name__ == '__main__':
         mu_p=0.05,
         elitism=True,
         print_all_pareto=False,
-        prem = False
+        prem = False,
+        log_only_last=True
 
     )
