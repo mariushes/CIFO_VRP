@@ -8,6 +8,7 @@ from charles.selection import multi_objective_dominant, is_pareto_efficient
 
 import csv
 import time
+import os
 
 
 class Individual:
@@ -107,7 +108,8 @@ class Population:
                     elite = deepcopy(max(self.individuals, key=attrgetter("fitness")))
                 elif self.optim == "min":
                     elite = deepcopy(min(self.individuals, key=attrgetter("fitness")))
-
+            
+            var = None
             if prem and select == fps:
             #Do we want to save this variance? Maybe we can plot how it changes through generation
                 fitness = [i.fitness for i in self]
@@ -145,7 +147,9 @@ class Population:
                 new_pop.pop(new_pop.index(least))
                 new_pop.append(elite)
 
-            self.log()
+            # log generation
+            self.log(select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var)
+
             self.individuals = new_pop
 
             self.pareto_flags = None
@@ -201,11 +205,27 @@ class Population:
 
         self.individuals = new_pop
 
-    def log(self):
-        with open(f'run_{self.timestamp}.csv', 'a', newline='') as file:
+    def log(self, select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var):
+        
+        setup_string = select.__name__ + "-" + crossover.__name__ + "-" + mutate.__name__ + "-" + str(gens) + "-" + str(co_p) + "-" + str(mu_p) + "-" + str(elitism) + "-" + str(prem)
+        dir_name = 'runs/' + setup_string
+        if not os.path.exists(dir_name):
+            print("Create Dir")
+            os.makedirs(dir_name)
+
+        with open(dir_name + "/run" + f'-{self.timestamp}.csv', 'a', newline='') as file:
             writer = csv.writer(file)
             for i in self:
-                writer.writerow([self.gen, i.representation, i.fitness])
+                if select == multi_objective_dominant:
+                    if prem:
+                        writer.writerow([self.gen, i.representation, i.fitness, i.fitness2, var])
+                    else:
+                        writer.writerow([self.gen, i.representation, i.fitness, i.fitness2])
+                else:
+                    if prem:
+                        writer.writerow([self.gen, i.representation, i.fitness,var])
+                    else:
+                        writer.writerow([self.gen, i.representation, i.fitness])
 
 
     def __len__(self):

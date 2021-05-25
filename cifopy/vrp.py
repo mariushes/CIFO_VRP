@@ -3,7 +3,7 @@ import nodes
 from charles.charles import Population, Individual
 from charles.search import hill_climb, sim_annealing
 from charles.selection import fps, tournament, multi_objective_dominant
-from charles.mutation import swap_mutation
+from charles.mutation import swap_mutation, cheapest_insertion_mutation
 import charles.mutation as mut
 import charles.selection as sel
 from charles.crossover import cycle_co
@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
 
     pop = Population(
-        size=10,
+        size=80,
         sol_size=len(dm[0]),
         valid_set=[i for i in range(len(dm[0]))],
         replacement=False,
@@ -121,14 +121,14 @@ if __name__ == '__main__':
 
     pop.evolve(
 
-        gens=100, 
-        select= multi_objective_dominant,
+        gens=2000, 
+        select= fps,
         crossover= cycle_co,
-        mutate=swap_mutation,
+        mutate=cheapest_insertion_mutation,
         co_p=0.8,
-        mu_p=0.5,
-        elitism=False,
-        print_all_pareto=True,
+        mu_p=0.05,
+        elitism=True,
+        print_all_pareto=False,
         prem = False
 
     )

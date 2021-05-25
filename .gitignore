@@ -133,3 +133,6 @@ dmypy.json
 .vscode/settings.json
 cifopy/.vscode/
 cifopy/.vscode/settings.json
+
+# runs data
+*.csv
