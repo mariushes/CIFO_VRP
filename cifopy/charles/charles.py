@@ -1,10 +1,13 @@
 from charles.selection import fps
 from random import shuffle, choice, sample, random
-from operator import  attrgetter
+from operator import  attrgetter, index
 from copy import deepcopy
-import numpy as np
+
+from charles.selection import multi_objective_dominant, is_pareto_efficient
+
 import csv
 import time
+
 
 class Individual:
     def __init__(
@@ -22,8 +25,16 @@ class Individual:
         else:
             self.representation = representation
         self.fitness = self.evaluate()
+        
+        try:
+            self.fitness2 = self.evaluate2()
+        except:
+            pass
 
     def evaluate(self):
+        raise Exception("You need to monkey patch the fitness path.")
+
+    def evaluate2(self):
         raise Exception("You need to monkey patch the fitness path.")
 
     def get_neighbours(self, func, **kwargs):
@@ -65,8 +76,12 @@ class Population:
         self.individuals = []
         self.size = size
         self.optim = optim
+
+        self.pareto_flags = None
+
         self.gen = 1
         self.timestamp = int(time.time())
+
         for _ in range(size):
             self.individuals.append(
                 Individual(
@@ -75,11 +90,14 @@ class Population:
                     valid_set=kwargs["valid_set"]
                 )
             )
+
         self.initial_var = np.var([i.fitness for i in self])
         self.sol_size = kwargs["sol_size"]
         self.replacement = kwargs["replacement"]
         self.valid_set = kwargs["valid_set"]
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, prem = False):
+        
+        
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, print_all_pareto=False, prem = False):
         for gen in range(gens):
             new_pop = []
 
@@ -128,15 +146,37 @@ class Population:
 
             self.log()
             self.individuals = new_pop
+
+            self.pareto_flags = None
+
+            if select == multi_objective_dominant:
+                # if selection is by multi_objective_dominant we return the first element that is found to be pareto efficient 
+                # by search for an element with the maximum flag.
+                costs = [[indiv.fitness, indiv.fitness2] for indiv in self]
+                costs = np.array(costs)
+                pareto_list = is_pareto_efficient(costs, self.optim).tolist()
+                
+                pareto_index = pareto_list.index(True)
+                print(f'Best Individual: Fitness 1: {self[pareto_index].fitness}, Fitness 2: {self[pareto_index].fitness2}')
+                if print_all_pareto:
+                    print("")
+                    for i, pareto in enumerate(pareto_list):
+                        if pareto:
+                            print(f'Best Individual: Fitness 1: {self[i].fitness}, Fitness 2: {self[i].fitness2}')
+                else:
+                    pareto_index = pareto_list.index(True)
+                    print(f'Best Individual: Fitness 1: {self[pareto_index].fitness}, Fitness 2: {self[pareto_index].fitness2}')
+                
+            else:
+                if self.optim == "max":
+                    
+                    print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')
+                elif self.optim == "min":
+                    print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
+            
+
             self.gen += 1
 
-            if self.optim == "max":
-                if gen%50==0:
-                    print(f'Best Individual: {max(self, key=attrgetter("fitness"))} Gen: {gen}')
-
-            elif self.optim == "min":
-                if gen%50==0:
-                    print(f'Best Individual: {min(self, key=attrgetter("fitness"))} Gen: {gen}')
 
     def reshuffle(self):
         n = len(self)

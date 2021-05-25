@@ -2,7 +2,7 @@ import data.vrp_data
 import nodes
 from charles.charles import Population, Individual
 from charles.search import hill_climb, sim_annealing
-from charles.selection import fps, tournament
+from charles.selection import fps, tournament, multi_objective_dominant
 from charles.mutation import swap_mutation
 import charles.mutation as mut
 import charles.selection as sel
@@ -96,6 +96,7 @@ def get_neighbours(self):
 if __name__ == '__main__':
     # Monkey patching
     Individual.evaluate = evaluate_distance
+    Individual.evaluate2 = evaluate_co2
     Individual.get_neighbours = get_neighbours
 
     dm = nodes.dist_matrix
@@ -119,12 +120,14 @@ if __name__ == '__main__':
 
     pop.evolve(
 
-        gens=1000, 
-        select= fps,
+        gens=100, 
+        select= multi_objective_dominant,
         crossover= cycle_co,
         mutate=swap_mutation,
         co_p=0.8,
         mu_p=0.5,
-        elitism = False,
-        prem = True
+        elitism=False,
+        print_all_pareto=True
+        prem = False
+
     )
