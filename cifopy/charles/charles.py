@@ -99,7 +99,7 @@ class Population:
         self.valid_set = kwargs["valid_set"]
         
         
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, print_all_pareto=False, prem = False):
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, print_all_pareto=False, prem = False, log_only_last=True):
         for gen in range(gens):
             new_pop = []
 
@@ -148,7 +148,11 @@ class Population:
                 new_pop.append(elite)
 
             # log generation
-            self.log(select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var)
+            if log_only_last:
+                if self.gen == gens:
+                    self.log(select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var)
+            else:
+                self.log(select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var)
 
             self.individuals = new_pop
 
