@@ -5,15 +5,18 @@ import matplotlib.pyplot as plt
 from random import choice
 
 runs_path = "../runs/"
-dirs = os.listdir(runs_path)
-try:
-    dirs.remove(".DS_Store")
-except:
-    pass
-print(dirs)
+def get_dirs():
+    dirs = os.listdir(runs_path)
+    try:
+        dirs.remove(".DS_Store")
+    except:
+        pass
+
+    return dirs
 
 
 def get_run_paths(index):
+    dirs = get_dirs()
     # we want to evaluate all runs of one setup
     dir = dirs[index]
     runs = os.listdir(runs_path + dir)
@@ -22,7 +25,9 @@ def get_run_paths(index):
 def get_best_fitness(dir_index, runs, representation):
     best_fitness_list = []
     best_fitness_serie = []
+    variance_serie = []
 
+    dirs = get_dirs()
     dir = dirs[dir_index]
 
 
@@ -30,11 +35,15 @@ def get_best_fitness(dir_index, runs, representation):
         fitness_index = 2
     else:
         fitness_index = 1
+    variance_index = fitness_index +1 
     for run in runs:
         df = pd.read_csv(runs_path + dir + "/" +run, header=None)
         # plot the best fitness across generations
         temp = np.asarray(df.groupby([0])[fitness_index].min())
         best_fitness_serie.append(temp)
+
+        var_tmp = np.asarray(df.groupby([0])[variance_index].min())
+        variance_serie.append(var_tmp)
 
         # find best fitness of last generation
         # make list of N final best fitnesses of each setup
@@ -42,7 +51,8 @@ def get_best_fitness(dir_index, runs, representation):
         best = temp[-1]
         best_fitness_list.append(best)
 
-    return best_fitness_list, best_fitness_serie
+    return best_fitness_list, best_fitness_serie, variance_serie
+
 
 
 def plot_whole_scatter(dir_index, run_index, runs, representation):
@@ -50,6 +60,7 @@ def plot_whole_scatter(dir_index, run_index, runs, representation):
     best_fitness_list = []
     best_fitness_serie = []
 
+    dirs = get_dirs()
     dir = dirs[dir_index]
 
     run = runs[run_index]

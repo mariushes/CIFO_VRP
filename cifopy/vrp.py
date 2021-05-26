@@ -8,6 +8,7 @@ import charles.mutation as mut
 import charles.selection as sel
 from charles.crossover import cycle_co
 from joblib import Parallel, delayed
+import time
 
 
 dm = None
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     def run():
         # Monkey patching
         Individual.evaluate = evaluate_distance
-        Individual.evaluate2 = evaluate_co2
+        #Individual.evaluate2 = evaluate_co2
         Individual.get_neighbours = get_neighbours
 
         dm = nodes.dist_matrix
@@ -144,11 +145,12 @@ if __name__ == '__main__':
             mu_p=0.05,
             elitism=True,
             print_all_pareto=False,
-            prem = True,
-            log_only_last=True
+            prem = False,
+            log_only_last=False
         )
 
-    N = 2
-
+    N = 10
+    time1 = time.time()
     Parallel(n_jobs=2)(delayed(run)() for i in range(N))
+    print(time.time() - time1)
 
