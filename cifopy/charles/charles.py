@@ -82,7 +82,7 @@ class Population:
         self.pareto_flags = None
 
         self.gen = 1
-        self.timestamp = int(time.time())
+        self.timestamp = int(time.time_ns())
 
         for _ in range(size):
             self.individuals.append(
@@ -109,11 +109,10 @@ class Population:
                 elif self.optim == "min":
                     elite = deepcopy(min(self.individuals, key=attrgetter("fitness")))
             
-            var = None
-            if prem and select == fps:
+            fitness = [i.fitness for i in self]
+            var = np.var(fitness)
+            if prem:
             #Do we want to save this variance? Maybe we can plot how it changes through generation
-                fitness = [i.fitness for i in self]
-                var = np.var(fitness)
                 if var/self.initial_var<0.05:
                     print("Premature convergence! Reshuffling the deck")
                     self.reshuffle()
@@ -209,7 +208,7 @@ class Population:
 
         self.individuals = new_pop
 
-    def log(self, select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var):
+    def log(self, select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var, log_representation = False):
         
         setup_string = select.__name__ + "-" + crossover.__name__ + "-" + mutate.__name__ + "-" + str(gens) + "-" + str(co_p) + "-" + str(mu_p) + "-" + str(elitism) + "-" + str(prem)
         dir_name = 'runs/' + setup_string
@@ -220,16 +219,18 @@ class Population:
         with open(dir_name + "/run" + f'-{self.timestamp}.csv', 'a', newline='') as file:
             writer = csv.writer(file)
             for i in self:
-                if select == multi_objective_dominant:
-                    if prem:
+                # we write this later
+                if log_representation:
+                    if select == multi_objective_dominant:
                         writer.writerow([self.gen, i.representation, i.fitness, i.fitness2, var])
                     else:
-                        writer.writerow([self.gen, i.representation, i.fitness, i.fitness2])
-                else:
-                    if prem:
                         writer.writerow([self.gen, i.representation, i.fitness,var])
+                else:
+                    if select == multi_objective_dominant:
+                        writer.writerow([self.gen, i.fitness, i.fitness2, var])
                     else:
-                        writer.writerow([self.gen, i.representation, i.fitness])
+                        writer.writerow([self.gen, i.fitness,var])
+
 
 
     def __len__(self):

@@ -7,6 +7,7 @@ from charles.mutation import swap_mutation, cheapest_insertion_mutation
 import charles.mutation as mut
 import charles.selection as sel
 from charles.crossover import cycle_co
+from joblib import Parallel, delayed
 
 
 dm = None
@@ -110,26 +111,44 @@ if __name__ == '__main__':
     sel.mo_functions = [evaluate_distance, evaluate_co2]
 
 
+    def run():
+        # Monkey patching
+        Individual.evaluate = evaluate_distance
+        Individual.evaluate2 = evaluate_co2
+        Individual.get_neighbours = get_neighbours
 
-    pop = Population(
-        size=80,
-        sol_size=len(dm[0]),
-        valid_set=[i for i in range(len(dm[0]))],
-        replacement=False,
-        optim="min",
-    )
+        dm = nodes.dist_matrix
+        cm = nodes.co2_matrix
+        demands = nodes.weights
+        home = 0
+        capacity = nodes.capacity
+        mut.dm = nodes.dist_matrix
+        mut.home = 0
+        sel.mo_functions = [evaluate_distance, evaluate_co2]
 
-    pop.evolve(
+        pop = Population(
+            size=80,
+            sol_size=len(dm[0]),
+            valid_set=[i for i in range(len(dm[0]))],
+            replacement=False,
+            optim="min",
+        )
 
-        gens=50, 
-        select= fps,
-        crossover= cycle_co,
-        mutate=cheapest_insertion_mutation,
-        co_p=0.8,
-        mu_p=0.05,
-        elitism=True,
-        print_all_pareto=False,
-        prem = False,
-        log_only_last=True
+        pop.evolve(
 
-    )
+            gens=2000, 
+            select= fps,
+            crossover= cycle_co,
+            mutate=cheapest_insertion_mutation,
+            co_p=0.9,
+            mu_p=0.05,
+            elitism=True,
+            print_all_pareto=False,
+            prem = True,
+            log_only_last=True
+        )
+
+    N = 2
+
+    Parallel(n_jobs=2)(delayed(run)() for i in range(N))
+
