@@ -2,11 +2,12 @@ import data.vrp_data
 import nodes
 from charles.charles import Population, Individual
 from charles.search import hill_climb, sim_annealing
-from charles.selection import fps, tournament, multi_objective_dominant
-from charles.mutation import swap_mutation, cheapest_insertion_mutation
+from charles.selection import fps, tournament, multi_objective_dominant, rank
+from charles.mutation import swap_mutation, cheapest_insertion_mutation, throas_mutation, inversion_mutation
 import charles.mutation as mut
 import charles.selection as sel
-from charles.crossover import cycle_co
+import charles.crossover as co
+from charles.crossover import cycle_co, edge_recombination_co, HGreX_co, alternating_edges_co, ordered_co
 from joblib import Parallel, delayed
 import time
 
@@ -109,6 +110,8 @@ if __name__ == '__main__':
     capacity = nodes.capacity
     mut.dm = nodes.dist_matrix
     mut.home = 0
+    co.dm = nodes.dist_matrix
+    co.home = 0
     sel.mo_functions = [evaluate_distance, evaluate_co2]
 
 
@@ -125,6 +128,8 @@ if __name__ == '__main__':
         capacity = nodes.capacity
         mut.dm = nodes.dist_matrix
         mut.home = 0
+        co.dm = nodes.dist_matrix
+        co.home = 0
         sel.mo_functions = [evaluate_distance, evaluate_co2]
 
         pop = Population(
@@ -138,19 +143,19 @@ if __name__ == '__main__':
         pop.evolve(
 
             gens=2000, 
-            select= fps,
-            crossover= cycle_co,
-            mutate=cheapest_insertion_mutation,
+            select= rank,
+            crossover= ordered_co,
+            mutate=swap_mutation,
             co_p=0.9,
             mu_p=0.05,
             elitism=True,
             print_all_pareto=False,
             prem = False,
-            log_only_last=False
+            log_only_last=True
         )
 
-    N = 10
+    N = 48
     time1 = time.time()
-    Parallel(n_jobs=2)(delayed(run)() for i in range(N))
+    Parallel(n_jobs=3)(delayed(run)() for i in range(N))
     print(time.time() - time1)
 
