@@ -54,21 +54,18 @@ class Individual:
 
     def __setitem__(self, position, value):
         self.representation[position] = value
-        self.fitness = self.evaluate()
 
     def __repr__(self):
         return f"Individual(size={len(self.representation)}); Fitness: {self.fitness}"
 
     def append(self, appendix):
         self.representation.append(appendix)
-        self.fitness = self.evaluate()
 
     def insert(self, index, insert):
         self.representation.insert(index, insert)
 
     def pop(self, index=-1):
         temp = self.representation.pop()
-        self.fitness = self.evaluate()
         return temp
 
 
@@ -106,10 +103,26 @@ class Population:
             new_pop = []
 
             if elitism == True:
-                if self.optim == "max":
-                    elite = deepcopy(max(self.individuals, key=attrgetter("fitness")))
-                elif self.optim == "min":
-                    elite = deepcopy(min(self.individuals, key=attrgetter("fitness")))
+                if select == multi_objective_dominant:
+                    # if the selection is multi objective we cannot choose the elites by the maximum fitness
+                    # instead we take all pareto efficient elements as elites and save it in a list, which we insert later
+
+                    # calculate the pareto efficient (non-dominated) individuals
+                    costs = [[indiv.fitness, indiv.fitness2] for indiv in self]
+                    costs = np.array(costs)
+                    pareto_list = is_pareto_efficient(costs, self.optim).tolist()
+                    elites = []
+
+                    # add all pareto efficient elements to the elites
+                    for i, pareto in enumerate(pareto_list):
+                        if pareto:
+                            elites.append(self[i])
+
+                else:
+                    if self.optim == "max":
+                        elite = deepcopy(max(self.individuals, key=attrgetter("fitness")))
+                    elif self.optim == "min":
+                        elite = deepcopy(min(self.individuals, key=attrgetter("fitness")))
             
             fitness = [i.fitness for i in self]
             var = np.var(fitness)
@@ -117,11 +130,11 @@ class Population:
             if prem:
                 #Check if it's reached premature convergence 
                 if var/self.initial_var<0.05:
-                    print("Premature convergence! Reshuffling the deck")
+                    #print("Premature convergence! Reshuffling the deck")
                     self.reshuffle()
                     #Re-evaluate fitness since population changed
                     fitness = [i.fitness for i in self]
-                    print(f"New variance ratio:{np.var(fitness)/self.initial_var}")
+                    #print(f"New variance ratio:{np.var(fitness)/self.initial_var}")
 
             while len(new_pop) < self.size:
                 parent1, parent2 = select(self), select(self)
@@ -142,12 +155,26 @@ class Population:
                     new_pop.append(Individual(representation=offspring2))
             #keep best individual if elitism==True
             if elitism == True:
-                if self.optim == "max":
-                    least = min(new_pop, key=attrgetter("fitness"))
-                elif self.optim == "min":
-                    least = max(new_pop, key=attrgetter("fitness"))
-                new_pop.pop(new_pop.index(least))
-                new_pop.append(elite)
+                if select == multi_objective_dominant:
+                    # calculate the pareto efficient (non-dominated) individuals
+                    costs = [[indiv.fitness, indiv.fitness2] for indiv in self]
+                    costs = np.array(costs)
+                    pareto_list = is_pareto_efficient(costs, self.optim).tolist()
+
+                    for i, pareto in enumerate(pareto_list):
+                        # if there is no elites left break the loop
+                        if not elites:
+                            break
+                        # remove an element from the elites list and replace a non-pareto (dominated) inidividual by it
+                        if not pareto:
+                            self[i] = elites.pop()
+                else:
+                    if self.optim == "max":
+                        least = min(new_pop, key=attrgetter("fitness"))
+                    elif self.optim == "min":
+                        least = max(new_pop, key=attrgetter("fitness"))
+                    new_pop.pop(new_pop.index(least))
+                    new_pop.append(elite)
 
             # log generation
             if log_only_last:
@@ -159,31 +186,40 @@ class Population:
             self.individuals = new_pop
 
             self.pareto_flags = None
-
+            
+            # if multi dominant objective is selection, save for indiv if it is pareto efficient which is needed for logging
             if select == multi_objective_dominant:
-                # if selection is by multi_objective_dominant we return the first element that is found to be pareto efficient 
-                # by search for an element with the maximum flag.
+                # calculate the pareto efficient (non-dominated) individuals
                 costs = [[indiv.fitness, indiv.fitness2] for indiv in self]
                 costs = np.array(costs)
                 pareto_list = is_pareto_efficient(costs, self.optim).tolist()
-                
-                pareto_index = pareto_list.index(True)
-                print(f'Best Individual: Fitness 1: {self[pareto_index].fitness}, Fitness 2: {self[pareto_index].fitness2}')
-                if print_all_pareto:
-                    print("")
-                    for i, pareto in enumerate(pareto_list):
-                        if pareto:
-                            print(f'Best Individual: Fitness 1: {self[i].fitness}, Fitness 2: {self[i].fitness2}')
-                else:
-                    pareto_index = pareto_list.index(True)
-                    print(f'Best Individual: Fitness 1: {self[pareto_index].fitness}, Fitness 2: {self[pareto_index].fitness2}')
-                
-            else:
-                if self.optim == "max":
+
+                for i, pareto in enumerate(pareto_list):
+                    self[i].pareto = pareto
+
+            if self.gen % 100==0:
+                if select == multi_objective_dominant:
+                    # calculate the pareto efficient (non-dominated) individuals
+                    costs = [[indiv.fitness, indiv.fitness2] for indiv in self]
+                    costs = np.array(costs)
+                    pareto_list = is_pareto_efficient(costs, self.optim).tolist()
                     
-                    print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')
-                elif self.optim == "min":
-                    print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
+                    if print_all_pareto:
+                        # print all elements that are pareto efficient 
+                        print("")
+                        for i, pareto in enumerate(pareto_list):
+                            if pareto:
+                                print(f'Best Individual: Fitness 1: {self[i].fitness}, Fitness 2: {self[i].fitness2}')
+                    else:
+                        #return the first element that is found to be pareto efficient 
+                        pareto_index = pareto_list.index(True)
+                        print(f'Best Individual: Fitness 1: {self[pareto_index].fitness}, Fitness 2: {self[pareto_index].fitness2}')
+                    
+                else:
+                    if self.optim == "max":
+                        print(f'Best Individual: {max(self, key=attrgetter("fitness"))}')
+                    elif self.optim == "min":
+                        print(f'Best Individual: {min(self, key=attrgetter("fitness"))}')
             
 
             self.gen += 1
@@ -216,7 +252,6 @@ class Population:
         setup_string = select.__name__ + "-" + crossover.__name__ + "-" + mutate.__name__ + "-" + str(gens) + "-" + str(co_p) + "-" + str(mu_p) + "-" + str(elitism) + "-" + str(prem)
         dir_name = 'runs/' + setup_string
         if not os.path.exists(dir_name):
-            print("Create Dir")
             os.makedirs(dir_name)
 
         with open(dir_name + "/run" + f'-{self.timestamp}.csv', 'a', newline='') as file:
@@ -225,12 +260,15 @@ class Population:
                 # we write this later
                 if log_representation:
                     if select == multi_objective_dominant:
-                        writer.writerow([self.gen, i.representation, i.fitness, i.fitness2, var])
+                        writer.writerow([self.gen, i.representation, i.fitness, i.fitness2, i.pareto, var])
                     else:
                         writer.writerow([self.gen, i.representation, i.fitness,var])
                 else:
                     if select == multi_objective_dominant:
-                        writer.writerow([self.gen, i.fitness, i.fitness2, var])
+                        try:
+                            writer.writerow([self.gen, i.fitness, i.fitness2, i.pareto, var])
+                        except:
+                            print("Error with logging")
                     else:
                         writer.writerow([self.gen, i.fitness,var])
 
@@ -241,6 +279,9 @@ class Population:
 
     def __getitem__(self, position):
         return self.individuals[position]
+
+    def __setitem__(self, position, value):
+        self.individuals[position] = value
 
     def __repr__(self):
         return f"Population(size={len(self.individuals)}, individual_size={len(self.individuals[0])})"
