@@ -28,6 +28,7 @@ class Individual:
             self.representation = representation
         self.fitness = self.evaluate()
         
+        #for multi-objective optimization
         try:
             self.fitness2 = self.evaluate2()
         except:
@@ -92,8 +93,9 @@ class Population:
                     valid_set=kwargs["valid_set"]
                 )
             )
-
+        #initial variance is needed when prem=True
         self.initial_var = np.var([i.fitness for i in self])
+        #save the arguments needed to generate new random solutions
         self.sol_size = kwargs["sol_size"]
         self.replacement = kwargs["replacement"]
         self.valid_set = kwargs["valid_set"]
@@ -111,8 +113,9 @@ class Population:
             
             fitness = [i.fitness for i in self]
             var = np.var(fitness)
+            
             if prem:
-            #Do we want to save this variance? Maybe we can plot how it changes through generation
+                #Check if it's reached premature convergence 
                 if var/self.initial_var<0.05:
                     print("Premature convergence! Reshuffling the deck")
                     self.reshuffle()
@@ -137,7 +140,7 @@ class Population:
                 new_pop.append(Individual(representation=offspring1))
                 if len(new_pop) < self.size:
                     new_pop.append(Individual(representation=offspring2))
-
+            #keep best individual if elitism==True
             if elitism == True:
                 if self.optim == "max":
                     least = min(new_pop, key=attrgetter("fitness"))
@@ -185,10 +188,12 @@ class Population:
 
             self.gen += 1
 
-
+    #when variance in the population is too low half of the population is discarded and replaced with
+    #randomly generated individuals
     def reshuffle(self):
         n = len(self)
         new_pop = []
+        #the best individual in the population is always saved
         if self.optim == "max":
             new_pop.append(deepcopy(max(self.individuals, key=attrgetter("fitness"))))
         elif self.optim == "min":
@@ -196,8 +201,6 @@ class Population:
 
 
         keep = sample(range(n), k=n//2)
-        #for how it's implemented the best could appear twice. Don't think it's a problem but we can avoid it
-        #half of the times you keep the best twice, could also be useful. write in report
         for i in keep:
             new_pop.append(deepcopy(self.individuals[i])) #to test, not sure
         while len(new_pop)<n:
@@ -207,7 +210,7 @@ class Population:
                     valid_set=self.valid_set))
 
         self.individuals = new_pop
-
+    #log the results
     def log(self, select, crossover, mutate, gens, co_p, mu_p, elitism, prem, var, log_representation = False):
         
         setup_string = select.__name__ + "-" + crossover.__name__ + "-" + mutate.__name__ + "-" + str(gens) + "-" + str(co_p) + "-" + str(mu_p) + "-" + str(elitism) + "-" + str(prem)

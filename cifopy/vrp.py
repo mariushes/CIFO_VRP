@@ -154,8 +154,8 @@ if __name__ == '__main__':
             log_only_last=True
         )
 
-    N = 48
+    N = 50
     time1 = time.time()
-    Parallel(n_jobs=3)(delayed(run)() for i in range(N))
+    Parallel(n_jobs=2)(delayed(run)() for i in range(N))
     print(time.time() - time1)
 

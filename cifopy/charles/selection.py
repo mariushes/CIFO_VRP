@@ -33,15 +33,15 @@ def fps(population):
         #min_prob is the probability of the least likely individual in a max instance with same fitness
         min_prob = m/sum(pop_fitness)
         n = len(population)
-        #covering the (extremely unlikely) case where all indiv have the same fitness, that otherwise would bring
-        # a division by zero
+        #covering the (extremely unlikely) case where all indiv have the same fitness, that otherwise 
+        # would cause a division by zero
         if n*min_prob == 1:
             return choice(population.individuals)
         rev_fitness = [M-x for x in pop_fitness]
         to_add = min_prob*sum(rev_fitness)/(1-n*min_prob)
         #the new vector from which compute probabilities
         rev_fitness[:] = [x+to_add for x in rev_fitness]
-         # Sum total fitnesses
+        # Sum total fitnesses
         total_fitness = sum(rev_fitness)
         # Get a 'position' on the wheel
         spin = uniform(0, total_fitness)

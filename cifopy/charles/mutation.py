@@ -61,7 +61,7 @@ def swap_sequence_mutation(individual):
     # get two points as start points for the two sequences
     seq_points = sample(range(len(individual)), 2)
 
-     # sort them 
+    # sort them 
     seq_points.sort()
     # the maximum sequence length is the minimum from the distance of the first to the second sequence point and the second to the end.
     max_len = min([seq_points[1] - seq_points[0] , len(i) - seq_points[1]])
