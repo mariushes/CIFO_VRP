@@ -4,18 +4,6 @@ dm = None
 home = None
 
 
-def template_mutation(individual):
-    """[summary]
-
-    Args:
-        individual ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    return individual
-
-
 def binary_mutation(individual):
     """Binary muation for a GA individual
 
